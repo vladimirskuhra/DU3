@@ -4,17 +4,13 @@ import java.util.*;
 
 public class CitacSuboru {
     private final MapovacTvarov registry;
+    private final Map<String, Tvar> pomenovaneTvary;
 
     public CitacSuboru(MapovacTvarov registry) {
         this.registry = registry;
+        this.pomenovaneTvary = new HashMap<>();
     }
 
-    /**
-     * Načíta tvary zo súboru a vráti ich ako zoznam objektov.
-     * @param cestaSuboru Cesta k textovému súboru, ktorý obsahuje definície tvarov.
-     * @return Zoznam tvarov (napr. Kruh, Obdlznik, Trojuholnik).
-     * @throws FileNotFoundException Ak súbor neexistuje.
-     */
     public List<Tvar> nacitajTvary(String cestaSuboru) throws FileNotFoundException {
         List<Tvar> tvary = new ArrayList<>();
         Scanner scanner = new Scanner(new File(cestaSuboru));
@@ -25,49 +21,54 @@ public class CitacSuboru {
         while (scanner.hasNextLine()) {
             String riadok = scanner.nextLine().trim();
 
-            // Ak narazíme na prázdny riadok, ukončíme aktuálny tvar
             if (riadok.isEmpty()) {
                 if (aktualnyTvar != null && vlastnosti != null) {
                     Tvar tvar = vytvorTvar(aktualnyTvar, vlastnosti);
                     tvary.add(tvar);
+
+                    // Ak má tvar názov, uložíme ho
+                    if (vlastnosti.containsKey("nazov")) {
+                        pomenovaneTvary.put(vlastnosti.get("nazov"), tvar);
+                    }
                 }
                 aktualnyTvar = null;
                 vlastnosti = null;
                 continue;
             }
 
-            // Ak riadok začína veľkým písmenom, ide o nový tvar
             if (Character.isUpperCase(riadok.charAt(0))) {
-                aktualnyTvar = riadok.split(" ", 2)[0]; // Napr. "Kruh"
+                aktualnyTvar = riadok.split(" ")[0];
                 vlastnosti = new HashMap<>();
+                if (riadok.split(" ").length > 1) {
+                    vlastnosti.put("nazov", riadok.split(" ")[1]);
+                }
             } else {
-                // Riadok obsahuje vlastnosť (kľúč a hodnota)
                 String[] casti = riadok.split(" ", 2);
-                if (casti.length == 2 && vlastnosti != null) {
+                if (casti.length == 2) {
                     vlastnosti.put(casti[0], casti[1]);
                 }
             }
         }
 
-        // Spracujeme posledný tvar, ak existuje
         if (aktualnyTvar != null && vlastnosti != null) {
             Tvar tvar = vytvorTvar(aktualnyTvar, vlastnosti);
             tvary.add(tvar);
+            if (vlastnosti.containsKey("nazov")) {
+                pomenovaneTvary.put(vlastnosti.get("nazov"), tvar);
+            }
         }
 
         scanner.close();
         return tvary;
     }
 
-    /**
-     * Vytvorí tvar pomocou registrovanej fabriky.
-     * @param typ Názov typu tvaru (napr. "Kruh", "Obdlznik").
-     * @param vlastnosti Mapa vlastností tvaru.
-     * @return Objekt typu Tvar.
-     */
     private Tvar vytvorTvar(String typ, Map<String, String> vlastnosti) {
         Tvar tvar = registry.vytvorTvar(typ);
-        tvar.nacitaj(vlastnosti);
+        if (tvar == null) {
+            throw new IllegalArgumentException("Tvar typu '" + typ + "' nebol registrovaný.");
+        }
+
+        tvar.nacitaj(vlastnosti, pomenovaneTvary);
         return tvar;
     }
 }
