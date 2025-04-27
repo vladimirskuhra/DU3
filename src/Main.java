@@ -2,23 +2,22 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        // Load only necessary shapes
         MapovacTvarov registry = new MapovacTvarov();
-
-        // Registrácia tvarov a ich fabrík
         registry.pridajTvar("Kruh", new KruhFabrika());
         registry.pridajTvar("Obdlznik", new ObdlznikFabrika());
         registry.pridajTvar("Trojuholnik", new TrojuholnikFabrika());
 
-        // Načítanie a spracovanie súboru
-        CitacSuboru citac = new CitacSuboru(registry);
         try {
-            List<Tvar> tvary = citac.nacitajTvary("src/pozicie.txt");
+            List<Tvar> tvary = new CitacSuboru(registry)
+                    .nacitajTvary("src/pozicie-trojuholniky.txt");
 
-            // Vykreslenie tvarov
+            // Process shapes in batches if file is large
             for (Tvar tvar : tvary) {
                 tvar.vykresli();
             }
         } catch (Exception e) {
+            System.err.println("Chyba: " + e.getMessage());
             e.printStackTrace();
         }
     }

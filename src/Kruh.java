@@ -1,58 +1,46 @@
 import java.util.Map;
 
-public class Kruh implements Tvar {
+public class Kruh extends AbstractTvar {
     private final fri.shapesge.Kruh kruh;
+    private int priemer;
 
     public Kruh() {
         this.kruh = new fri.shapesge.Kruh();
+        this.sirka = 0; // Will be set based on diameter
+        this.vyska = 0;
     }
 
     @Override
     public void nacitaj(Map<String, String> vlastnosti, Map<String, Tvar> pomenovaneTvary) {
-        int x = Integer.parseInt(vlastnosti.getOrDefault("x", "0"));
-        int y = Integer.parseInt(vlastnosti.getOrDefault("y", "0"));
-        int polomer = Integer.parseInt(vlastnosti.getOrDefault("polomer", "30"));
+        spracujZakladneVlastnosti(vlastnosti, pomenovaneTvary);
+        priemer = Integer.parseInt(vlastnosti.getOrDefault("polomer", "30")) * 2;
+        this.sirka = priemer;
+        this.vyska = priemer;
         String farba = vlastnosti.getOrDefault("farba", "blue");
 
-        if (vlastnosti.containsKey("pozicia")) {
-            String[] poziciaParams = vlastnosti.get("pozicia").split(" ");
-            String smer = poziciaParams[0];
-            String referencnyNazov = poziciaParams[1];
-
-            Tvar referencnyTvar = pomenovaneTvary.get(referencnyNazov);
-            if (referencnyTvar instanceof Kruh referencnyKruh) {
-                int[] novaPozicia = vypocitajRelativnuPoziciu(referencnyKruh, smer);
-                x = novaPozicia[0];
-                y = novaPozicia[1];
-            }
-        }
-
         this.kruh.zmenPolohu(x, y);
-        this.kruh.zmenPriemer(polomer * 2); // ShapesGE používa priemer
+        this.kruh.zmenPriemer(priemer);
         this.kruh.zmenFarbu(farba);
+    }
+
+    @Override
+    public int[] vypocitajRelativnuPoziciu(String smer, Tvar referencnyTvar) {
+        int refX = referencnyTvar.getX();
+        int refY = referencnyTvar.getY();
+        int refSirka = referencnyTvar.getSirka();
+        int refVyska = referencnyTvar.getVyska();
+
+        switch (smer) {
+            case "hore": return new int[]{refX, refY - vyska};
+            case "dole": return new int[]{refX, refY + refVyska};
+            case "vpravo": return new int[]{refX + refSirka, refY};
+            case "vlavo": return new int[]{refX - sirka, refY};
+            default: throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
+        }
     }
 
     @Override
     public void vykresli() {
         this.kruh.zobraz();
-    }
-
-    private int[] vypocitajRelativnuPoziciu(Kruh referencnyKruh, String smer) {
-        int refX = referencnyKruh.kruh.getX();
-        int refY = referencnyKruh.kruh.getY();
-        int refPriemer = referencnyKruh.kruh.getPriemer();
-
-        switch (smer) {
-            case "hore":
-                return new int[]{refX, refY - refPriemer};
-            case "dole":
-                return new int[]{refX, refY + refPriemer};
-            case "vpravo":
-                return new int[]{refX + refPriemer, refY};
-            case "vlavo":
-                return new int[]{refX - refPriemer, refY};
-            default:
-                throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
-        }
     }
 }
