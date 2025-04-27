@@ -17,16 +17,10 @@ public class Obdlznik extends AbstractTvar {
         vyska = Integer.parseInt(rozmery[1]);
         String farba = vlastnosti.getOrDefault("farba", "red");
 
-        // Apply properties to the rectangle
+        // Apply properties to the rectangle - no special cases for colors
         this.obdlznik.zmenPolohu(x, y);
         this.obdlznik.zmenStrany(sirka, vyska);
         this.obdlznik.zmenFarbu(farba);
-
-        if (farba.equals("brown")) {
-            this.obdlznik.zmenPolohu(x, y + vyska);  // Posunieme o výšku dole
-        } else {
-            this.obdlznik.zmenPolohu(x, y);
-        }
     }
 
     @Override
@@ -36,11 +30,14 @@ public class Obdlznik extends AbstractTvar {
         int refSirka = referencnyTvar.getSirka();
         int refVyska = referencnyTvar.getVyska();
 
+        // Center rectangles horizontally when placed above or below
+        int centerOffset = (refSirka - sirka) / 2;
+
         switch (smer) {
-            case "hore": return new int[]{refX, refY - vyska};
-            case "dole": return new int[]{refX, refY + refVyska};
-            case "vpravo": return new int[]{refX + refSirka, refY};
-            case "vlavo": return new int[]{refX - sirka, refY};
+            case "hore": return new int[]{refX + centerOffset, refY - vyska};
+            case "dole": return new int[]{refX + centerOffset, refY + refVyska};
+            case "vpravo": return new int[]{refX + refSirka, refY + (refVyska - vyska) / 2};
+            case "vlavo": return new int[]{refX - sirka, refY + (refVyska - vyska) / 2};
             default: throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
         }
     }

@@ -68,6 +68,7 @@ public class CitacSuboru {
             throw new IllegalArgumentException("Tvar typu '" + typ + "' nebol registrovaný.");
         }
 
+        // Properly load properties
         tvar.nacitaj(vlastnosti, pomenovaneTvary);
         return tvar;
     }

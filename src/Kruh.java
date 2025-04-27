@@ -2,24 +2,34 @@ import java.util.Map;
 
 public class Kruh extends AbstractTvar {
     private final fri.shapesge.Kruh kruh;
-    private int priemer;
+    private int polomer;
 
     public Kruh() {
         this.kruh = new fri.shapesge.Kruh();
-        this.sirka = 0; // Will be set based on diameter
-        this.vyska = 0;
     }
 
     @Override
     public void nacitaj(Map<String, String> vlastnosti, Map<String, Tvar> pomenovaneTvary) {
-        spracujZakladneVlastnosti(vlastnosti, pomenovaneTvary);
-        priemer = Integer.parseInt(vlastnosti.getOrDefault("polomer", "30")) * 2;
-        this.sirka = priemer;
-        this.vyska = priemer;
+        int x = Integer.parseInt(vlastnosti.getOrDefault("x", "0"));
+        int y = Integer.parseInt(vlastnosti.getOrDefault("y", "0"));
+        int polomer = Integer.parseInt(vlastnosti.getOrDefault("polomer", "30"));
         String farba = vlastnosti.getOrDefault("farba", "blue");
 
+        if (vlastnosti.containsKey("pozicia")) {
+            String[] poziciaParams = vlastnosti.get("pozicia").split(" ");
+            String smer = poziciaParams[0];
+            String referencnyNazov = poziciaParams[1];
+
+            Tvar referencnyTvar = pomenovaneTvary.get(referencnyNazov);
+            if (referencnyTvar instanceof Kruh referencnyKruh) {
+                int[] novaPozicia = vypocitajRelativnuPoziciu(smer, referencnyKruh);
+                x = novaPozicia[0];
+                y = novaPozicia[1];
+            }
+        }
+
         this.kruh.zmenPolohu(x, y);
-        this.kruh.zmenPriemer(priemer);
+        this.kruh.zmenPriemer(polomer * 2); // ShapesGE uses diameter
         this.kruh.zmenFarbu(farba);
     }
 
@@ -30,11 +40,14 @@ public class Kruh extends AbstractTvar {
         int refSirka = referencnyTvar.getSirka();
         int refVyska = referencnyTvar.getVyska();
 
+        // Center smaller objects on larger ones horizontally
+        int centerOffset = (refSirka - sirka) / 2;
+
         switch (smer) {
-            case "hore": return new int[]{refX, refY - vyska};
-            case "dole": return new int[]{refX, refY + refVyska};
-            case "vpravo": return new int[]{refX + refSirka, refY};
-            case "vlavo": return new int[]{refX - sirka, refY};
+            case "hore": return new int[]{refX + centerOffset, refY - vyska};
+            case "dole": return new int[]{refX + centerOffset, refY + refVyska};
+            case "vpravo": return new int[]{refX + refSirka, refY + (refVyska - vyska) / 2};
+            case "vlavo": return new int[]{refX - sirka, refY + (refVyska - vyska) / 2};
             default: throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
         }
     }

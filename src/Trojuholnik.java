@@ -7,6 +7,7 @@ public class Trojuholnik extends AbstractTvar {
         this.trojuholnik = new fri.shapesge.Trojuholnik();
     }
 
+    // In Trojuholnik.java
     @Override
     public void nacitaj(Map<String, String> vlastnosti, Map<String, Tvar> pomenovaneTvary) {
         spracujZakladneVlastnosti(vlastnosti, pomenovaneTvary);
@@ -15,17 +16,15 @@ public class Trojuholnik extends AbstractTvar {
         vyska = Integer.parseInt(vlastnosti.getOrDefault("vyska", "30"));
         String farba = vlastnosti.getOrDefault("farba", "green");
 
-        // Uprava súradníc
-        int adjustedX = x + sirka / 2;
-        int adjustedY = y + vyska;
+        // Correct way to position triangles for ShapesGE
+        // ShapesGE expects the top point of the triangle, not the top-left corner of the bounding box
+        int adjustedX = x + (sirka / 2);
+        int adjustedY = y;
 
         this.trojuholnik.zmenPolohu(adjustedX, adjustedY);
         this.trojuholnik.zmenRozmery(vyska, sirka);
         this.trojuholnik.zmenFarbu(farba);
-
     }
-
-
     @Override
     public int[] vypocitajRelativnuPoziciu(String smer, Tvar referencnyTvar) {
         int refX = referencnyTvar.getX();
