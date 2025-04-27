@@ -1,49 +1,61 @@
-import java.util.Map;
+public class Obdlznik extends Tvar {
+    private int sirka;
+    private int vyska;
+    private fri.shapesge.Obdlznik sgObdlznik;
 
-public class Obdlznik extends AbstractTvar {
-    private final fri.shapesge.Obdlznik obdlznik;
+    public Obdlznik(String meno, String farba, int x, int y, int sirka, int vyska, RelPozicia relPozicia) {
+        super(TypTvaru.OBDLZNIK, meno, farba, x, y, relPozicia);
+        this.sirka = sirka;
+        this.vyska = vyska;
+        this.sgObdlznik = new fri.shapesge.Obdlznik(x, y);
+        this.sgObdlznik.zmenStrany(sirka, vyska);
+        this.sgObdlznik.zmenFarbu(farba);
+        this.sgObdlznik.zmenPolohu(x, y);
+    }
 
-    public Obdlznik() {
-        this.obdlznik = new fri.shapesge.Obdlznik();
+    public int getSirka() { return sirka; }
+    public int getVyska() { return vyska; }
+
+    public void setSirka(int sirka) {
+        this.sirka = sirka;
+        this.sgObdlznik.zmenStrany(this.sirka, this.vyska);
+    }
+
+    public void setVyska(int vyska) {
+        this.vyska = vyska;
+        this.sgObdlznik.zmenStrany(this.sirka, this.vyska);
     }
 
     @Override
-    public void nacitaj(Map<String, String> vlastnosti, Map<String, Tvar> pomenovaneTvary) {
-        spracujZakladneVlastnosti(vlastnosti, pomenovaneTvary);
-
-        // Process rectangle-specific properties
-        String[] rozmery = vlastnosti.getOrDefault("rozmery", "30 30").split(" ");
-        sirka = Integer.parseInt(rozmery[0]);
-        vyska = Integer.parseInt(rozmery[1]);
-        String farba = vlastnosti.getOrDefault("farba", "red");
-
-        // Apply properties to the rectangle - no special cases for colors
-        this.obdlznik.zmenPolohu(x, y);
-        this.obdlznik.zmenStrany(sirka, vyska);
-        this.obdlznik.zmenFarbu(farba);
+    public void setFarba(String farba) {
+        super.setFarba(farba);
+        sgObdlznik.zmenFarbu(farba);
     }
 
     @Override
-    public int[] vypocitajRelativnuPoziciu(String smer, Tvar referencnyTvar) {
-        int refX = referencnyTvar.getX();
-        int refY = referencnyTvar.getY();
-        int refSirka = referencnyTvar.getSirka();
-        int refVyska = referencnyTvar.getVyska();
-
-        // Center rectangles horizontally when placed above or below
-        int centerOffset = (refSirka - sirka) / 2;
-
-        switch (smer) {
-            case "hore": return new int[]{refX + centerOffset, refY - vyska};
-            case "dole": return new int[]{refX + centerOffset, refY + refVyska};
-            case "vpravo": return new int[]{refX + refSirka, refY + (refVyska - vyska) / 2};
-            case "vlavo": return new int[]{refX - sirka, refY + (refVyska - vyska) / 2};
-            default: throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
-        }
+    public void setX(int x) {
+        super.setX(x);
+        sgObdlznik.zmenPolohu(x, this.y);
     }
 
     @Override
-    public void vykresli() {
-        this.obdlznik.zobraz();
+    public void setY(int y) {
+        super.setY(y);
+        sgObdlznik.zmenPolohu(this.x, y);
+    }
+
+    @Override
+    public void vykresli(Object graphics) {
+        sgObdlznik.zobraz();
+    }
+
+    @Override
+    public double getPolovicaSirka() {
+        return sirka / 2.0;
+    }
+
+    @Override
+    public double getPolovicaVyska() {
+        return vyska / 2.0;
     }
 }

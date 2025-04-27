@@ -1,48 +1,61 @@
-import java.util.Map;
+public class Trojuholnik extends Tvar {
+    private int sirka;
+    private int vyska;
+    private fri.shapesge.Trojuholnik sgTrojuholnik;
 
-public class Trojuholnik extends AbstractTvar {
-    private final fri.shapesge.Trojuholnik trojuholnik;
-
-    public Trojuholnik() {
-        this.trojuholnik = new fri.shapesge.Trojuholnik();
+    public Trojuholnik(String meno, String farba, int x, int y, int sirka, int vyska, RelPozicia relPozicia) {
+        super(TypTvaru.TROJUHOLNIK, meno, farba, x, y, relPozicia);
+        this.sirka = sirka;
+        this.vyska = vyska;
+        this.sgTrojuholnik = new fri.shapesge.Trojuholnik(x, y);
+        this.sgTrojuholnik.zmenRozmery(vyska, sirka); // POZOR: shapesge má (vyska, zakladna)
+        this.sgTrojuholnik.zmenFarbu(farba);
+        this.sgTrojuholnik.zmenPolohu(x, y);
     }
 
-    // In Trojuholnik.java
-    @Override
-    public void nacitaj(Map<String, String> vlastnosti, Map<String, Tvar> pomenovaneTvary) {
-        spracujZakladneVlastnosti(vlastnosti, pomenovaneTvary);
+    public int getSirka() { return sirka; }
+    public int getVyska() { return vyska; }
 
-        sirka = Integer.parseInt(vlastnosti.getOrDefault("sirka", "30"));
-        vyska = Integer.parseInt(vlastnosti.getOrDefault("vyska", "30"));
-        String farba = vlastnosti.getOrDefault("farba", "green");
-
-        // Correct way to position triangles for ShapesGE
-        // ShapesGE expects the top point of the triangle, not the top-left corner of the bounding box
-        int adjustedX = x + (sirka / 2);
-        int adjustedY = y;
-
-        this.trojuholnik.zmenPolohu(adjustedX, adjustedY);
-        this.trojuholnik.zmenRozmery(vyska, sirka);
-        this.trojuholnik.zmenFarbu(farba);
+    public void setSirka(int sirka) {
+        this.sirka = sirka;
+        this.sgTrojuholnik.zmenRozmery(this.vyska, this.sirka);
     }
-    @Override
-    public int[] vypocitajRelativnuPoziciu(String smer, Tvar referencnyTvar) {
-        int refX = referencnyTvar.getX();
-        int refY = referencnyTvar.getY();
-        int refSirka = referencnyTvar.getSirka();
-        int refVyska = referencnyTvar.getVyska();
 
-        switch (smer) {
-            case "hore": return new int[]{refX, refY - vyska};
-            case "dole": return new int[]{refX, refY + refVyska};
-            case "vpravo": return new int[]{refX + refSirka, refY};
-            case "vlavo": return new int[]{refX - sirka, refY};
-            default: throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
-        }
+    public void setVyska(int vyska) {
+        this.vyska = vyska;
+        this.sgTrojuholnik.zmenRozmery(this.vyska, this.sirka);
     }
 
     @Override
-    public void vykresli() {
-        this.trojuholnik.zobraz();
+    public void setFarba(String farba) {
+        super.setFarba(farba);
+        this.sgTrojuholnik.zmenFarbu(farba);
+    }
+
+    @Override
+    public void setX(int x) {
+        super.setX(x);
+        sgTrojuholnik.zmenPolohu(x, this.y);
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        sgTrojuholnik.zmenPolohu(this.x, y);
+    }
+
+    @Override
+    public void vykresli(Object graphics) {
+        sgTrojuholnik.zobraz();
+    }
+
+    @Override
+    public double getPolovicaSirka() {
+        return sirka / 2.0;
+    }
+
+    @Override
+    public double getPolovicaVyska() {
+        return vyska / 2.0;
     }
 }

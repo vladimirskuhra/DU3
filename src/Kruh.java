@@ -1,59 +1,60 @@
-import java.util.Map;
 
-public class Kruh extends AbstractTvar {
-    private final fri.shapesge.Kruh kruh;
+
+public class Kruh extends Tvar {
     private int polomer;
+    private fri.shapesge.Kruh sgKruh;
 
-    public Kruh() {
-        this.kruh = new fri.shapesge.Kruh();
+    public Kruh(String meno, String farba, int x, int y, int polomer, RelPozicia relPozicia) {
+        super(TypTvaru.KRUH, meno, farba, x, y, relPozicia);
+        this.polomer = polomer;
+        this.sgKruh = new fri.shapesge.Kruh(x, y);
+        this.sgKruh.zmenPriemer(polomer);
+        this.sgKruh.zmenFarbu(farba); // shapesge chce String!
+        this.sgKruh.zmenPolohu(x, y);
+    }
+
+    public int getPolomer() {
+        return polomer;
+    }
+
+    public void setPolomer(int polomer) {
+        this.polomer = polomer;
+        sgKruh.zmenPriemer(polomer);
     }
 
     @Override
-    public void nacitaj(Map<String, String> vlastnosti, Map<String, Tvar> pomenovaneTvary) {
-        int x = Integer.parseInt(vlastnosti.getOrDefault("x", "0"));
-        int y = Integer.parseInt(vlastnosti.getOrDefault("y", "0"));
-        int polomer = Integer.parseInt(vlastnosti.getOrDefault("polomer", "30"));
-        String farba = vlastnosti.getOrDefault("farba", "blue");
-
-        if (vlastnosti.containsKey("pozicia")) {
-            String[] poziciaParams = vlastnosti.get("pozicia").split(" ");
-            String smer = poziciaParams[0];
-            String referencnyNazov = poziciaParams[1];
-
-            Tvar referencnyTvar = pomenovaneTvary.get(referencnyNazov);
-            if (referencnyTvar instanceof Kruh referencnyKruh) {
-                int[] novaPozicia = vypocitajRelativnuPoziciu(smer, referencnyKruh);
-                x = novaPozicia[0];
-                y = novaPozicia[1];
-            }
-        }
-
-        this.kruh.zmenPolohu(x, y);
-        this.kruh.zmenPriemer(polomer * 2); // ShapesGE uses diameter
-        this.kruh.zmenFarbu(farba);
+    public void setX(int x) {
+        super.setX(x);
+        sgKruh.zmenPolohu(x, this.y);
     }
 
     @Override
-    public int[] vypocitajRelativnuPoziciu(String smer, Tvar referencnyTvar) {
-        int refX = referencnyTvar.getX();
-        int refY = referencnyTvar.getY();
-        int refSirka = referencnyTvar.getSirka();
-        int refVyska = referencnyTvar.getVyska();
-
-        // Center smaller objects on larger ones horizontally
-        int centerOffset = (refSirka - sirka) / 2;
-
-        switch (smer) {
-            case "hore": return new int[]{refX + centerOffset, refY - vyska};
-            case "dole": return new int[]{refX + centerOffset, refY + refVyska};
-            case "vpravo": return new int[]{refX + refSirka, refY + (refVyska - vyska) / 2};
-            case "vlavo": return new int[]{refX - sirka, refY + (refVyska - vyska) / 2};
-            default: throw new IllegalArgumentException("Neplatná hodnota smeru: " + smer);
-        }
+    public void setY(int y) {
+        super.setY(y);
+        sgKruh.zmenPolohu(this.x, y);
     }
 
     @Override
-    public void vykresli() {
-        this.kruh.zobraz();
+    public void setFarba(String farbaString) {
+        super.setFarba(farbaString);
+        sgKruh.zmenFarbu(farbaString);
+    }
+
+    public int getPriemer() {
+        return 2 * this.polomer;
+    }
+
+    @Override
+    public void vykresli(Object graphics) {
+        sgKruh.zobraz();
+    }
+
+    @Override
+    public double getPolovicaSirka() {
+        return this.getPriemer() / 2.0;
+    }
+    @Override
+    public double getPolovicaVyska() {
+        return this.getPriemer()/ 2.0;
     }
 }

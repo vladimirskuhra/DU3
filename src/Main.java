@@ -1,40 +1,24 @@
-import java.util.List;
-import java.util.Iterator;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        // Load only necessary shapes
-        MapovacTvarov registry = new MapovacTvarov();
-        registry.pridajTvar("Kruh", new KruhFabrika());
-        registry.pridajTvar("Obdlznik", new ObdlznikFabrika());
-        registry.pridajTvar("Trojuholnik", new TrojuholnikFabrika());
+        // Zadaj cestu k svojmu vstupnému súboru
+        String subor = "src/snehuliak.txt";
+        // 1. Načítaj všetky tvary
+        Map<String, Tvar> tvary = Parser.nacitajTvaryZoSuboru(subor);
 
-        try {
-            String fileName = "src/snehuliak.txt";  // Try with different files
+        // 2. Zarovnaj prvý tvar (napr. hlavu) do stredu scény
+        TvarUtils.centrovatPrvyTvar(tvary, 200, 120);
 
-            List<Tvar> tvary = new CitacSuboru(registry)
-                    .nacitajTvary(fileName);
+        // 3. Vypočítaj relatívne pozície ostatných tvarov
+        TvarUtils.vypocitajRelPozicie(tvary);
 
-            // Filter out the unwanted green circle at the top of the stick
-            if (fileName.contains("snehuliak")) {
-                // Remove the last shape which is the green circle
-                Iterator<Tvar> iterator = tvary.iterator();
-                Tvar lastShape = null;
-                while (iterator.hasNext()) {
-                    lastShape = iterator.next();
-                }
-                if (lastShape != null) {
-                    tvary.remove(tvary.size() - 1);
-                }
-            }
-
-            // Process shapes in batches if file is large
-            for (Tvar tvar : tvary) {
-                tvar.vykresli();
-            }
-        } catch (Exception e) {
-            System.err.println("Chyba: " + e.getMessage());
-            e.printStackTrace();
+        // 4. Vypíš info o tvaroch (alebo ich pošli do vykresľovania)
+        for (Tvar tvar : tvary.values()) {
+            System.out.println(tvar);
         }
+
+        // Ak máš vykresľovacie okno, tu by si zavolal draw metódy,
+        // kde budeš tvary z mapy posielať na plátno.
     }
 }
